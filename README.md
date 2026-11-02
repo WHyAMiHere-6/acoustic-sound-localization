@@ -1,58 +1,271 @@
-# Acoustic Sound Localization and Camera Tracking
+# Hybrid RMS and GCC-PHAT Based Acoustic Sound Localization With Camera Tracking
 
-This repository contains the implementation files for a student project that combines a multi-microphone audio front end, a Python localization/servo-control script, and a separate ESP32-CAM video stream. The goal is to estimate a sound's direction and point a servo-mounted setup toward it, while the camera provides a visual view.
+An embedded Digital Signal Processing (DSP) system designed to estimate the direction of an incoming sound source using a three-microphone array and automatically orient a camera toward the estimated direction.
 
-> **Project status:** This is the source snapshot available for sharing. The Python localization script is incomplete: it references `read_block`, `gcc_phat`, `PAIRS`, and other helpers that are not included in the files. Results and performance claims should be added only after the full pipeline has been implemented and evaluated.
+The proposed system combines **Root Mean Square (RMS) amplitude analysis** and **Generalized Cross-Correlation with Phase Transform (GCC-PHAT)** to estimate the Direction of Arrival (DOA) of sound. An adaptive hybrid fusion mechanism combines both localization techniques, followed by temporal median filtering to improve angular stability.
 
-## System overview
+The implementation integrates ESP32-based audio acquisition, Python-based signal processing, Arduino-controlled servo positioning, and ESP32-CAM video streaming.
 
-![System overview](docs/images/system-overview.svg)
+## System Overview
 
-The audio capture firmware, Python processing, servo control, and camera server are separate components. The camera sketch streams video; it does not itself perform sound localization.
+The complete system consists of three major stages:
 
-## Repository contents
+- **Audio Acquisition:** Three INMP441 MEMS microphones capture acoustic signals, which are acquired by the ESP32 through I2S.
+- **Signal Processing:** A Python application performs audio preprocessing, RMS-based localization, GCC-PHAT-based TDOA estimation, adaptive angle fusion, and temporal median filtering.
+- **Camera Control and Observation:** The estimated direction is communicated to an Arduino Uno, which controls an SG90 servo motor. The ESP32-CAM independently provides a live video stream over Wi-Fi.
+
+![System Overview](docs/images/system-overview.svg)
+
+## Hardware Implementation
+
+The prototype integrates the microphone array, ESP32 audio acquisition, Arduino-based servo control, and ESP32-CAM video streaming.
+
+![Physical Hardware Prototype](docs/images/setup.png)
+
+## System Architecture
+
+The following block diagram illustrates the complete signal flow, from acoustic signal acquisition to camera positioning and live video observation.
+
+![System Block Diagram](docs/images/block.png)
+
+## Hardware Components
+
+- ESP32 Development Board
+- Three INMP441 Digital MEMS Microphones
+- Arduino Uno
+- SG90 Servo Motor
+- ESP32-CAM Module
+- Host Computer
+- USB Serial Communication
+
+## Circuit Diagram
+
+The circuit diagram illustrates the microphone connections to the ESP32, serial communication with the host computer, and Arduino-based servo control.
+
+![Hardware Circuit Diagram](docs/images/circuit.png)
+
+## Microphone Array Configuration
+
+The system uses three INMP441 digital MEMS microphones arranged in a circular configuration.
+
+- Number of microphones: 3
+- Microphone array radius: 7.5 cm
+- Sampling frequency: 16 kHz
+- Frame size: 2048 samples
+- Frame duration: 128 ms
+- Audio interface: I2S
+- Localization range: 0°–180°
+
+The microphones capture acoustic signals from different spatial positions. Differences in received signal amplitudes and arrival times are used to estimate the direction of the incoming sound.
+
+## Working Methodology
+
+### 1. Audio Acquisition
+
+Three INMP441 digital MEMS microphones capture the incoming acoustic signals.
+
+The ESP32 acquires microphone data through the I2S interface and transfers the sampled audio data to the host computer through USB serial communication.
+
+### 2. Audio Preprocessing
+
+The acquired audio signals undergo preprocessing before localization. This stage includes filtering, framing, and windowing.
+
+### 3. RMS-Based Direction Estimation
+
+Root Mean Square (RMS) analysis estimates the relative signal strength received by each microphone.
+
+The RMS value is calculated as:
+
+\[
+RMS = \sqrt{\frac{1}{N}\sum_{n=1}^{N}x[n]^2}
+\]
+
+The relative RMS values are used to estimate the direction of the incoming sound source.
+
+### 4. GCC-PHAT-Based TDOA Estimation
+
+Generalized Cross-Correlation with Phase Transform (GCC-PHAT) estimates the Time Difference of Arrival (TDOA) between microphone signals.
+
+The GCC-PHAT function is expressed as:
+
+\[
+R_{ij}(\tau)=
+\mathcal{F}^{-1}
+\left[
+\frac{X_i(f)X_j^*(f)}
+{|X_i(f)X_j^*(f)|}
+\right]
+\]
+
+The correlation peak provides an estimate of the relative time delay between microphone pairs. These delay estimates are used to calculate the corresponding direction of arrival.
+
+### 5. Adaptive Hybrid Angle Fusion
+
+The RMS and GCC-PHAT methods provide complementary localization estimates.
+
+An adaptive weighted fusion approach combines the two estimates. The contribution of each technique is determined using RMS dominance and a GCC-PHAT correlation confidence index.
+
+This produces the final hybrid direction estimate.
+
+### 6. Temporal Median Filtering
+
+A temporal median filtering stage is incorporated to mitigate instantaneous fluctuations in the estimated direction and improve output stability.
+
+### 7. Camera Positioning and Video Streaming
+
+The filtered direction estimate is communicated to the Arduino Uno through serial communication.
+
+The Arduino controls the SG90 servo motor to orient the camera toward the estimated direction.
+
+The ESP32-CAM operates independently as a video streaming unit, providing a live MJPEG stream over Wi-Fi.
+
+## Experimental Results
+
+The developed system was evaluated using angular localization accuracy, processing latency, servo positioning accuracy, and false activation measurements.
+
+### Measured Performance
+
+The following image presents the experimentally measured performance of the developed system.
+
+![Experimental Performance Metrics](docs/images/metric.png)
+
+The system achieved a mean angular error of **0.95°**, an angular RMSE of **1.20°**, and an average DSP processing latency of **6.868 ms**.
+
+The measured servo positioning error was **1.72°**, with **98.28% accuracy within ±5°**.
+
+### Comparison with Existing Localization Algorithms
+
+The developed system was compared with localization algorithms reported in the referenced study.
+
+![Comparison of Sound Source Localization Algorithms](docs/images/comparison.png)
+
+The developed system achieved an experimental MAE of **0.95°** and an angular RMSE of **1.20°**.
+
+*Note: The reported comparison methods and the developed system may have been evaluated under different experimental conditions. The results should therefore be interpreted as a comparison of reported performance rather than a controlled head-to-head benchmark.*
+
+## Repository Structure
 
 ```text
-firmware/
-  arduino-servo/       Arduino servo control sketch
-  esp32-audio/         ESP32 I2S microphone capture sketch
-  esp32-camera/        ESP32-CAM web server and support files
-src/
-  python/              Python processing / serial-control snapshot
-docs/
-  images/              Project overview diagram
-requirements.txt       Python dependencies
+Acoustic-Sound-Localization/
+│
+├── Firmware/
+│   ├── Arduino.ino
+│   ├── ESP32.ino
+│   └── ESP32CAM.ino
+│
+├── src/
+│   └── algorithm.py
+│
+├── docs/
+│   └── images/
+│       ├── block.png
+│       ├── circuit.png
+│       ├── comparison.png
+│       ├── metric.png
+│       ├── setup.png
+│       └── system-overview.svg
+│
+├── .gitignore
+└── README.md
 ```
 
-## Hardware and software
+## Software Requirements
 
-- ESP32 audio board with the I2S microphone hardware expected by `firmware/esp32-audio/record_mics_py.ino`
-- Arduino-compatible board and servo for `firmware/arduino-servo/sketch_oct28a.ino`
-- ESP32-CAM board for the independent video server
-- Python 3 for the host-side script
+- Python 3
+- Arduino IDE
+- ESP32 Arduino Board Package
 
-The exact microphone model, wiring, board revisions, and tested library versions were not documented in the source snapshot. Confirm these details against your hardware before building.
+### Python Dependencies
 
-## Setup
+The Python signal processing implementation uses the following libraries:
 
-Install Python dependencies:
+- NumPy
+- SciPy
+- Matplotlib
+- PySerial
 
-```sh
-python -m pip install -r requirements.txt
+Install the dependencies using:
+
+```bash
+pip install numpy scipy matplotlib pyserial
 ```
 
-Set `PORT` and `SERVO_PORT` in `src/python/calculation.py` to the serial ports used by the ESP32 audio board and Arduino. The script currently has missing helper definitions, so it is not ready to run as-is.
+## Getting Started
 
-Open each firmware sketch in Arduino IDE, select the matching board, install the required board support and libraries, then verify pin assignments and wiring before uploading. The camera sketch includes Wi-Fi placeholders. Replace `YOUR_WIFI_SSID` and `YOUR_WIFI_PASSWORD` locally; do not commit real credentials.
+### 1. Clone the Repository
 
-## Important camera configuration check
+```bash
+git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
 
-The camera sketch's pin definitions appear to target an AI-THINKER ESP32-CAM, while `board_config.h` selects `CAMERA_MODEL_ESP_EYE`. Confirm the actual camera board and make the board selection consistent before compiling.
+cd YOUR_REPOSITORY
+```
 
-## Images and project photos
+Replace the repository URL with your actual GitHub repository URL.
 
-The supplied project files did not include photos of the built hardware, microphone placement, or a demo. The diagram above summarizes the source structure; it is not a photograph or a claim that the system has been validated. Add your own project photos under `docs/images/` and link them here when available.
+### 2. Upload ESP32 Firmware
 
-## Report
+1. Open `Firmware/ESP32.ino` in Arduino IDE.
+2. Install the ESP32 board package if required.
+3. Select the appropriate ESP32 development board.
+4. Verify the microphone pin configuration.
+5. Upload the firmware.
 
-The project report PDF/LaTeX source is intentionally not included in this repository. This README summarizes the implementation files available in the project folder.
+### 3. Run Python Localization
+
+1. Connect the ESP32 to the host computer through USB.
+2. Install the required Python dependencies.
+3. Open `src/algorithm.py`.
+4. Verify the serial port and baud rate configuration.
+5. Execute the program:
+
+```bash
+python src/algorithm.py
+```
+
+### 4. Configure Arduino Servo Control
+
+1. Open `Firmware/Arduino.ino` in Arduino IDE.
+2. Verify the serial communication and servo pin configuration.
+3. Connect the Arduino Uno and SG90 servo motor.
+4. Upload the sketch.
+
+### 5. Configure ESP32-CAM
+
+1. Open `Firmware/ESP32CAM.ino`.
+2. Configure the required Wi-Fi credentials.
+3. Select the appropriate ESP32-CAM board.
+4. Upload the firmware.
+5. Access the live video stream using the configured network address.
+
+## Applications
+
+- Acoustic source localization
+- Sound-directed camera positioning
+- Smart surveillance systems
+- Acoustic monitoring systems
+- Human voice direction estimation
+- Embedded intelligent sensing systems
+
+## Future Improvements
+
+- Improved localization in noisy and reverberant environments.
+- Near-field sound source localization.
+- Multi-source acoustic localization.
+- Improved synchronization and real-time processing.
+- Integration of visual object detection.
+- Extended testing across different acoustic environments.
+
+## Technologies Used
+
+Python · NumPy · SciPy · ESP32 · INMP441 · Arduino · ESP32-CAM · I2S · RMS · GCC-PHAT · TDOA · Digital Signal Processing
+
+## Author
+
+**Abhay Arakkal**
+
+Electronics and Communication Engineering  
+Model Engineering College, Thrikkakara, Kerala, India
+
+---
+
+This project explores the integration of digital signal processing, embedded systems, acoustic sensing, and camera positioning to develop a hybrid sound localization system.
