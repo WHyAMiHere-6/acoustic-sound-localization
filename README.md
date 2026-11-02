@@ -14,19 +14,25 @@ The complete system consists of three major stages:
 - **Signal Processing:** A Python application performs audio preprocessing, RMS-based localization, GCC-PHAT-based TDOA estimation, adaptive angle fusion, and temporal median filtering.
 - **Camera Control and Observation:** The estimated direction is communicated to an Arduino Uno, which controls an SG90 servo motor. The ESP32-CAM independently provides a live video stream over Wi-Fi.
 
-![System Overview](docs/images/system-overview.svg)
+<p align="center">
+  <img src="docs/images/system-overview.svg" width="850" alt="System Overview">
+</p>
 
 ## Hardware Implementation
 
 The prototype integrates the microphone array, ESP32 audio acquisition, Arduino-based servo control, and ESP32-CAM video streaming.
 
-![Physical Hardware Prototype](docs/images/setup.png)
+<p align="center">
+  <img src="docs/images/setup.png" width="650" alt="Hardware Prototype">
+</p>
 
 ## System Architecture
 
 The following block diagram illustrates the complete signal flow, from acoustic signal acquisition to camera positioning and live video observation.
 
-![System Block Diagram](docs/images/block.png)
+<p align="center">
+  <img src="docs/images/block.png" width="850" alt="System Architecture">
+</p>
 
 ## Hardware Components
 
@@ -42,7 +48,9 @@ The following block diagram illustrates the complete signal flow, from acoustic 
 
 The circuit diagram illustrates the microphone connections to the ESP32, serial communication with the host computer, and Arduino-based servo control.
 
-![Hardware Circuit Diagram](docs/images/circuit.png)
+<p align="center">
+  <img src="docs/images/circuit.png" width="850" alt="Circuit Diagram">
+</p>
 
 ## Microphone Array Configuration
 
@@ -127,7 +135,9 @@ The developed system was evaluated using angular localization accuracy, processi
 
 The following image presents the experimentally measured performance of the developed system.
 
-![Experimental Performance Metrics](docs/images/metric.png)
+<p align="center">
+  <img src="docs/images/metric.png" width="650" alt="Experimental Performance Metrics">
+</p>
 
 The system achieved a mean angular error of **0.95°**, an angular RMSE of **1.20°**, and an average DSP processing latency of **6.868 ms**.
 
@@ -137,7 +147,9 @@ The measured servo positioning error was **1.72°**, with **98.28% accuracy with
 
 The developed system was compared with localization algorithms reported in the referenced study.
 
-![Comparison of Sound Source Localization Algorithms](docs/images/comparison.png)
+<p align="center">
+  <img src="docs/images/comparison.png" width="850" alt="Algorithm Comparison">
+</p>
 
 The developed system achieved an experimental MAE of **0.95°** and an angular RMSE of **1.20°**.
 
