@@ -325,20 +325,6 @@ python src/algorithm.py
 
 Python · NumPy · SciPy · ESP32 · INMP441 · Arduino · ESP32-CAM · I2S · RMS · GCC-PHAT · TDOA · Digital Signal Processing
 
-## Authors
 
-1. **Author 1** — Name
-2. **Author 2** — Name
-3. **Author 3** — Name
-4. **Author 4** — Name
-5. **Author 5** — Name
-6. **Author 6** — Name
-7. **Author 7** — Name
-8. **Author 8** — Name
-
-Electronics and Communication Engineering  
-Model Engineering College, Thrikkakara, Kerala, India
-
----
 
 This project explores the integration of digital signal processing, embedded systems, acoustic sensing, and camera positioning to develop a hybrid sound localization system.
