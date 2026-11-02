@@ -60,9 +60,9 @@ The system uses three INMP441 digital MEMS microphones arranged in a circular co
 
 The microphones capture acoustic signals from different spatial positions. Differences in received signal amplitudes and arrival times are used to estimate the direction of the incoming sound.
 
-## ESP32–INMP441 Connections
+## ESP32–INMP441 Microphone Connections
 
-The following connection diagram shows the individual microphone connections, including power, ground, clock, data, and left/right channel selection.
+The following diagram shows the individual microphone connections, including power, ground, clock, data, and left/right channel selection.
 
 ![ESP32 to INMP441 Microphone Connections](docs/images/Connection.png)
 
@@ -70,11 +70,19 @@ The following connection diagram shows the individual microphone connections, in
 
 The ESP32 uses two I2S interfaces for microphone acquisition.
 
-- **I2S0 operates as the master**, using GPIO26 (BCLK), GPIO25 (WS), and GPIO32 (SD).
-- **I2S1 operates as the slave**, using GPIO18, GPIO19, and GPIO33.
+- **I2S0 Master:** GPIO26 (BCLK), GPIO25 (WS), and GPIO32 (SD).
+- **I2S1 Slave:** GPIO18, GPIO19, and GPIO33.
 - GPIO26 is connected to GPIO18 using a jumper wire.
 - GPIO25 is connected to GPIO19 using a jumper wire.
-- The microphone data outputs are connected according to the channel arrangement shown in the circuit.
+
+The microphone data connections are arranged as follows:
+
+- Mic 1 SD and Mic 2 SD share GPIO32.
+- Mic 3 SD connects to GPIO33.
+- All three microphones share GPIO26 (SCK) and GPIO25 (WS).
+- Mic 1 L/R connects to GND.
+- Mic 2 L/R connects to 3.3V.
+- Mic 3 L/R connects to GND.
 
 The following diagram illustrates the master–slave clock connections and microphone data connections.
 
@@ -117,7 +125,11 @@ Root Mean Square (RMS) analysis estimates the relative signal strength received 
 The RMS value is calculated as:
 
 $$
-RMS = \sqrt{\frac{1}{N}\sum_{n=1}^{N}x[n]^2}
+\mathrm{RMS} =
+\sqrt{
+\frac{1}{N}
+\sum_{n=1}^{N} x[n]^2
+}
 $$
 
 The relative RMS values are used to estimate the direction of the incoming sound source.
@@ -129,13 +141,23 @@ Generalized Cross-Correlation with Phase Transform (GCC-PHAT) estimates the Time
 The GCC-PHAT function is expressed as:
 
 $$
-R_{ij}(\tau)=
+R_{i,j}(\tau) =
 \mathcal{F}^{-1}
 \left[
-\frac{X_i(f)X_j^*(f)}
-{|X_i(f)X_j^*(f)|}
+\frac{
+X_{i}(f)X_{j}^{*}(f)
+}{
+\left|X_{i}(f)X_{j}^{*}(f)\right|
+}
 \right]
 $$
+
+where:
+
+- \(X_{i}(f)\) and \(X_{j}(f)\) represent the Fourier transforms of the two microphone signals.
+- The complex conjugate is represented by the asterisk.
+- \(\mathcal{F}^{-1}\) represents the inverse Fourier transform.
+- \(\tau\) represents the time delay.
 
 The correlation peak provides an estimate of the relative time delay between microphone pairs. These delay estimates are used to calculate the corresponding direction of arrival.
 
@@ -308,9 +330,16 @@ python src/algorithm.py
 
 Python · NumPy · SciPy · ESP32 · INMP441 · Arduino · ESP32-CAM · I2S · RMS · GCC-PHAT · TDOA · Digital Signal Processing
 
-## Author
+## Authors
 
-**Abhay Arakkal**
+1. **Author 1** — Name
+2. **Author 2** — Name
+3. **Author 3** — Name
+4. **Author 4** — Name
+5. **Author 5** — Name
+6. **Author 6** — Name
+7. **Author 7** — Name
+8. **Author 8** — Name
 
 Electronics and Communication Engineering  
 Model Engineering College, Thrikkakara, Kerala, India
