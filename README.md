@@ -124,13 +124,11 @@ Root Mean Square (RMS) analysis estimates the relative signal strength received 
 
 The RMS value is calculated as:
 
+
 $$
-\mathrm{RMS} =
-\sqrt{
-\frac{1}{N}
-\sum_{n=1}^{N} x[n]^2
-}
+RMS = \sqrt{ \frac{1}{N} \sum_{n=1}^{N} x[n]^2 }
 $$
+
 
 The relative RMS values are used to estimate the direction of the incoming sound source.
 
@@ -140,14 +138,13 @@ Generalized Cross-Correlation with Phase Transform (GCC-PHAT) estimates the Time
 
 
 
+
 The GCC-PHAT function is expressed as:
 
 
 $$
-R_{i,j}(\tau) = \mathcal{F}^{-1} \left( \frac{X_{i}(f) X_{j}^{*}(f)}{X_{i}(f) X_{j}^{*}(f)\text{ magnitude}} \right)
+R_{ij}(\tau) = \mathcal{F}^{-1} \left( \frac{X_{i}(f)\, X_{j}^{\ast}(f)}{\left| X_{i}(f)\, X_{j}^{\ast}(f) \right|} \right)
 $$
-
-
 
 
 where:
