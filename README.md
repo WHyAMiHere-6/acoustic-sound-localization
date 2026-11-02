@@ -6,37 +6,33 @@ The proposed system combines **Root Mean Square (RMS) amplitude analysis** and *
 
 The implementation integrates ESP32-based audio acquisition, Python-based signal processing, Arduino-controlled servo positioning, and ESP32-CAM video streaming.
 
+---
+
 ## System Overview
 
-The complete system consists of three major stages:
+The system consists of three major stages:
 
 - **Audio Acquisition:** Three INMP441 MEMS microphones capture acoustic signals, which are acquired by the ESP32 through I2S.
 - **Signal Processing:** A Python application performs audio preprocessing, RMS-based localization, GCC-PHAT-based TDOA estimation, adaptive angle fusion, and temporal median filtering.
 - **Camera Control and Observation:** The estimated direction is communicated to an Arduino Uno, which controls an SG90 servo motor. The ESP32-CAM independently provides a live video stream over Wi-Fi.
 
-<p align="center">
-  <img src="docs/images/system-overview.svg" width="850" alt="System Overview">
-</p>
+![System Overview](docs/images/system-overview.svg)
 
-## Hardware Implementation
+## Hardware Prototype
 
-The prototype integrates the microphone array, ESP32 audio acquisition, Arduino-based servo control, and ESP32-CAM video streaming.
+The physical prototype integrates the microphone array, ESP32 audio acquisition, Arduino-based servo control, and ESP32-CAM.
 
-<p align="center">
-  <img src="docs/images/setup.png" width="650" alt="Hardware Prototype">
-</p>
+![Physical Hardware Prototype](docs/images/setup.png)
 
 ## System Architecture
 
-The following block diagram illustrates the complete signal flow, from acoustic signal acquisition to camera positioning and live video observation.
+The following architecture illustrates the complete signal-processing workflow, from acoustic signal acquisition to camera positioning and video observation.
 
-<p align="center">
-  <img src="docs/images/block.png" width="850" alt="System Architecture">
-</p>
+![System Block Diagram](docs/images/block.png)
 
 ## Hardware Components
 
-- ESP32 Development Board
+- ESP32 38-pin Development Board
 - Three INMP441 Digital MEMS Microphones
 - Arduino Uno
 - SG90 Servo Motor
@@ -46,11 +42,9 @@ The following block diagram illustrates the complete signal flow, from acoustic 
 
 ## Circuit Diagram
 
-The circuit diagram illustrates the microphone connections to the ESP32, serial communication with the host computer, and Arduino-based servo control.
+The complete circuit illustrates the microphone connections, ESP32 audio acquisition, host computer communication, Arduino servo control, and ESP32-CAM mounting arrangement.
 
-<p align="center">
-  <img src="docs/images/circuit.png" width="850" alt="Circuit Diagram">
-</p>
+![Complete Circuit Diagram](docs/images/circuit.png)
 
 ## Microphone Array Configuration
 
@@ -65,6 +59,44 @@ The system uses three INMP441 digital MEMS microphones arranged in a circular co
 - Localization range: 0°–180°
 
 The microphones capture acoustic signals from different spatial positions. Differences in received signal amplitudes and arrival times are used to estimate the direction of the incoming sound.
+
+## ESP32–INMP441 Connections
+
+The following connection diagram shows the individual microphone connections, including power, ground, clock, data, and left/right channel selection.
+
+![ESP32 to INMP441 Microphone Connections](docs/images/Connection.png)
+
+### I2S Master–Slave Configuration
+
+The ESP32 uses two I2S interfaces for microphone acquisition.
+
+- **I2S0 operates as the master**, using GPIO26 (BCLK), GPIO25 (WS), and GPIO32 (SD).
+- **I2S1 operates as the slave**, using GPIO18, GPIO19, and GPIO33.
+- GPIO26 is connected to GPIO18 using a jumper wire.
+- GPIO25 is connected to GPIO19 using a jumper wire.
+- The microphone data outputs are connected according to the channel arrangement shown in the circuit.
+
+The following diagram illustrates the master–slave clock connections and microphone data connections.
+
+![I2S Master Slave and Microphone Connections](docs/images/connection2.png)
+
+## Serial Communication and Camera Control
+
+The host computer receives microphone data from the ESP32 and sends servo positioning commands to the Arduino Uno.
+
+The communication configuration is illustrated below.
+
+![Serial Communication and Servo Connections](docs/images/connection2.png)
+
+The main communication settings are:
+
+- ESP32 to Host Computer: COM14 at 921600 baud.
+- Host Computer to Arduino Uno: COM8 at 115200 baud.
+- Arduino D9: SG90 servo signal.
+- Arduino 5V: Servo VCC.
+- Arduino GND: Servo GND.
+
+The ESP32-CAM is mounted on the servo mechanism and uses its own power supply. It provides video streaming over Wi-Fi without a wired signal connection to the other boards.
 
 ## Working Methodology
 
@@ -84,9 +116,9 @@ Root Mean Square (RMS) analysis estimates the relative signal strength received 
 
 The RMS value is calculated as:
 
-\[
+$$
 RMS = \sqrt{\frac{1}{N}\sum_{n=1}^{N}x[n]^2}
-\]
+$$
 
 The relative RMS values are used to estimate the direction of the incoming sound source.
 
@@ -96,14 +128,14 @@ Generalized Cross-Correlation with Phase Transform (GCC-PHAT) estimates the Time
 
 The GCC-PHAT function is expressed as:
 
-\[
+$$
 R_{ij}(\tau)=
 \mathcal{F}^{-1}
 \left[
 \frac{X_i(f)X_j^*(f)}
 {|X_i(f)X_j^*(f)|}
 \right]
-\]
+$$
 
 The correlation peak provides an estimate of the relative time delay between microphone pairs. These delay estimates are used to calculate the corresponding direction of arrival.
 
@@ -125,7 +157,7 @@ The filtered direction estimate is communicated to the Arduino Uno through seria
 
 The Arduino controls the SG90 servo motor to orient the camera toward the estimated direction.
 
-The ESP32-CAM operates independently as a video streaming unit, providing a live MJPEG stream over Wi-Fi.
+The ESP32-CAM operates independently as a video streaming unit, providing a live video stream over Wi-Fi.
 
 ## Experimental Results
 
@@ -133,23 +165,26 @@ The developed system was evaluated using angular localization accuracy, processi
 
 ### Measured Performance
 
-The following image presents the experimentally measured performance of the developed system.
+The following figure presents the experimentally measured performance of the developed system.
 
-<p align="center">
-  <img src="docs/images/metric.png" width="650" alt="Experimental Performance Metrics">
-</p>
+![Experimental Performance Metrics](docs/images/metric.png)
 
-The system achieved a mean angular error of **0.95°**, an angular RMSE of **1.20°**, and an average DSP processing latency of **6.868 ms**.
+The system achieved:
 
-The measured servo positioning error was **1.72°**, with **98.28% accuracy within ±5°**.
+- Mean Angular Error (MAE): **0.95°**
+- Angular RMSE: **1.20°**
+- Maximum Angular Error: **2.9°**
+- Average DSP Processing Latency: **6.868 ms**
+- Servo Positioning Error (MAE): **1.72°**
+- Servo Accuracy within ±5°: **98.28%**
+- False Activations in Noisy Environment: **2 in 20 seconds**
+- False Activations in Quiet Environment: **0 observed**
 
 ### Comparison with Existing Localization Algorithms
 
 The developed system was compared with localization algorithms reported in the referenced study.
 
-<p align="center">
-  <img src="docs/images/comparison.png" width="850" alt="Algorithm Comparison">
-</p>
+![Comparison of Sound Source Localization Algorithms](docs/images/comparison.png)
 
 The developed system achieved an experimental MAE of **0.95°** and an angular RMSE of **1.20°**.
 
@@ -175,7 +210,9 @@ Acoustic-Sound-Localization/
 │       ├── comparison.png
 │       ├── metric.png
 │       ├── setup.png
-│       └── system-overview.svg
+│       ├── system-overview.svg
+│       ├── Connection.png
+│       └── connection2.png
 │
 ├── .gitignore
 └── README.md
@@ -189,7 +226,7 @@ Acoustic-Sound-Localization/
 
 ### Python Dependencies
 
-The Python signal processing implementation uses the following libraries:
+The Python signal processing implementation uses:
 
 - NumPy
 - SciPy
