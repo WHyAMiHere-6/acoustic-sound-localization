@@ -138,19 +138,17 @@ The relative RMS values are used to estimate the direction of the incoming sound
 
 Generalized Cross-Correlation with Phase Transform (GCC-PHAT) estimates the Time Difference of Arrival (TDOA) between microphone signals.
 
+
+
 The GCC-PHAT function is expressed as:
 
+
 $$
-R_{i,j}(\tau) =
-\mathcal{F}^{-1}
-\left[
-\frac{
-X_{i}(f)X_{j}^{*}(f)
-}{
-\left|X_{i}(f)X_{j}^{*}(f)\right|
-}
-\right]
+R_{i,j}(\tau) = \mathcal{F}^{-1} \left( \frac{X_{i}(f) X_{j}^{*}(f)}{X_{i}(f) X_{j}^{*}(f)\text{ magnitude}} \right)
 $$
+
+
+
 
 where:
 
